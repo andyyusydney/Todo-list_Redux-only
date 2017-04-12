@@ -13,6 +13,10 @@
 			footer>ul>li:not(:last-child) {
 				padding-right: 20px;
 			}
+
+			ul.todo-list>li.completed {
+				text-decoration: line-through;
+			}
 		</style>
 	</head>
 	<body>
@@ -95,11 +99,22 @@
 						return [
 							...state,
 							{
-								id: id + 1,
+								id: id += 1,
 								text: action.text,
 								completed: false
 							}
 						];
+
+					case 'TOGGLE_TODO':
+						return state.map((todo) => {
+							if (todo.id == action.index) {
+								return Object.assign({}, todo, {
+									completed: !todo.completed
+								});
+							}
+							return todo;
+						});
+
 					default:
 						return state;
 				}
@@ -120,15 +135,20 @@
 				todoStore.dispatch(addTodo(newTodoText));
 			});
 
+			$('ul.todo-list').on('click', 'li', (e) => {
+				const todoItemId = $(e.target).attr('id');
+				todoStore.dispatch(toggleTodo(todoItemId));
+			});
+
 			todoStore.subscribe(() => {
 				console.log('todoStore.getState()=', todoStore.getState());
 				var todosList = todoStore.getState().todos;
 
 				if (todosList && (todosList.length > 0)) {
 					$('ul.todo-list').empty();
-					
+
 					for (let todo of todosList) {
-						$('ul.todo-list').append('<li>'+todo.text+'</li>');
+						$('ul.todo-list').append('<li class="'+(todo.completed?'completed':'')+'" id="'+todo.id+'">'+todo.text+'</li>');
 					}
 				}
 			});
