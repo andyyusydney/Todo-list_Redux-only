@@ -11,7 +11,13 @@
 			}
 
 			footer>ul>li:not(:last-child) {
-				padding-right: 20px;
+				padding: 0 10px;
+				margin-right: 20px;
+			}
+
+			footer>ul>li.selected {
+				border-radius: 10px;
+				border: 1px solid #000;
 			}
 
 			ul.todo-list>li.completed {
@@ -37,9 +43,9 @@
 		<footer>
 			<p>Show:</p>
 			<ul class="todo-filter">
-				<li class="filter-all">All</li>
-				<li class="filter-active">Active</li>
-				<li class="filter-completed">Completed</li>
+				<li id="filter-all" class="selected">All</li>
+				<li id="filter-active">Active</li>
+				<li id="filter-completed">Completed</li>
 			</ul>
 		</footer>
 
@@ -68,7 +74,7 @@
 
 			/* App's state
 				{
-				  visibilityFilter: 'SHOW_ALL',
+				  visibilityFilter: 'filter-all',
 				  todos: [
 				    {
 				      text: 'text',
@@ -80,12 +86,10 @@
 			*/
 
 			/* reducers */
-			function visibilityFilter(state = 'SHOW_ALL', action) {
+			function visibilityFilter(state = 'filter-all', action) {
 				switch (action.type) {
 					case 'SET_VISIBILITY_FILTER':
-						return Object.assign({}, state, {
-							visibilityFilter: action.filter
-						});
+						return action.filter;
 					default:
 						return state;
 				}
@@ -126,12 +130,12 @@
 				todos
 			});
 
-			var todoStore = Redux.createStore(todoAppCombinedReducer);			
+			const todoStore = Redux.createStore(todoAppCombinedReducer);			
 		</script>
 
 		<script>
 			$('button.add-todo').on('click', (e)=> {
-				var newTodoText = $('input#new-todo').val();
+				const newTodoText = $('input#new-todo').val();
 				todoStore.dispatch(addTodo(newTodoText));
 			});
 
@@ -140,15 +144,42 @@
 				todoStore.dispatch(toggleTodo(todoItemId));
 			});
 
+			$('ul.todo-filter>li').on('click', (e) => {
+				const selectedFilterValue = $(e.currentTarget).attr('id');
+				todoStore.dispatch(setVisibilityFilter(selectedFilterValue));
+			});
+
+			function appendTodoItemToDom(todo) {
+				$('ul.todo-list').append('<li class="'+(todo.completed?'completed':'')+'" id="'+todo.id+'">'+todo.text+'</li>');
+			}
+
 			todoStore.subscribe(() => {
 				console.log('todoStore.getState()=', todoStore.getState());
-				var todosList = todoStore.getState().todos;
+				const todosList = todoStore.getState().todos;
+
+				const visibilityFilter = todoStore.getState().visibilityFilter;
+				console.log('visibilityFilter=', visibilityFilter);
+				$('ul.todo-filter>li').each((index, li) => {
+					const $li = $(li);
+					
+					if (visibilityFilter == $li.attr('id')) {
+						$li.addClass('selected');
+					} else {
+						$li.removeClass('selected');
+					}
+				});
 
 				if (todosList && (todosList.length > 0)) {
 					$('ul.todo-list').empty();
 
 					for (let todo of todosList) {
-						$('ul.todo-list').append('<li class="'+(todo.completed?'completed':'')+'" id="'+todo.id+'">'+todo.text+'</li>');
+						if ((visibilityFilter === 'filter-active') && !todo.completed) {
+							appendTodoItemToDom(todo);
+						} else if ((visibilityFilter === 'filter-completed') && todo.completed) {
+							appendTodoItemToDom(todo);
+						} else if (visibilityFilter === 'filter-all') {
+							appendTodoItemToDom(todo);
+						}
 					}
 				}
 			});
