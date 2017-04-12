@@ -38,5 +38,100 @@
 				<li class="filter-completed">Completed</li>
 			</ul>
 		</footer>
+
+		<script>
+			/* action creators */
+			function addTodo(text) {
+				return {
+					type: 'ADD_TODO',
+					text
+				};
+			}
+
+			function toggleTodo(index) {
+				return {
+					type: 'TOGGLE_TODO',
+					index
+				}
+			}
+
+			function setVisibilityFilter(filter) {
+				return {
+					type: 'SET_VISIBILITY_FILTER',
+					filter
+				}
+			}
+
+			/* App's state
+				{
+				  visibilityFilter: 'SHOW_ALL',
+				  todos: [
+				    {
+				      text: 'text',
+				      completed: true,
+				    },
+				    ...
+				  ]
+				}
+			*/
+
+			/* reducers */
+			function visibilityFilter(state = 'SHOW_ALL', action) {
+				switch (action.type) {
+					case 'SET_VISIBILITY_FILTER':
+						return Object.assign({}, state, {
+							visibilityFilter: action.filter
+						});
+					default:
+						return state;
+				}
+			}
+
+			let id = 0;
+			function todos(state=[], action) {
+				console.log('action=', action);
+				switch (action.type) {
+					case 'ADD_TODO':
+						return [
+							...state,
+							{
+								id: id + 1,
+								text: action.text,
+								completed: false
+							}
+						];
+					default:
+						return state;
+				}
+
+			}
+
+			const todoAppCombinedReducer = Redux.combineReducers({
+				visibilityFilter,
+				todos
+			});
+
+			var todoStore = Redux.createStore(todoAppCombinedReducer);			
+		</script>
+
+		<script>
+			$('button.add-todo').on('click', (e)=> {
+				var newTodoText = $('input#new-todo').val();
+				todoStore.dispatch(addTodo(newTodoText));
+			});
+
+			todoStore.subscribe(() => {
+				console.log('todoStore.getState()=', todoStore.getState());
+				var todosList = todoStore.getState().todos;
+
+				if (todosList && (todosList.length > 0)) {
+					$('ul.todo-list').empty();
+					
+					for (let todo of todosList) {
+						$('ul.todo-list').append('<li>'+todo.text+'</li>');
+					}
+				}
+			});
+		</script>
 	</body>
 </html>
