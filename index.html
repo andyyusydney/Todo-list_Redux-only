@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Redux Todo List</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.6.0/redux.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+		<style>
+			footer>ul>li {
+				display: inline;
+			}
+
+			footer>ul>li:not(:last-child) {
+				padding-right: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Redux Todo List</h1>
+		</header>
+		
+		<section>
+			<input type="text" name="new-todo" id="new-todo" />
+			<button class="add-todo">Add Todo</button>
+		</section>
+		
+		<section>
+			<ul class="todo-list">
+			</ul>
+		</section>
+
+		<footer>
+			<p>Show:</p>
+			<ul class="todo-filter">
+				<li class="filter-all">All</li>
+				<li class="filter-active">Active</li>
+				<li class="filter-completed">Completed</li>
+			</ul>
+		</footer>
+	</body>
+</html>
